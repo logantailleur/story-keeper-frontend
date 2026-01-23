@@ -16,6 +16,7 @@ export interface ApiResponse<T> {
 /**
  * Get the base API URL from environment variables
  * Reads from VITE_API_BASE_URL (must be prefixed with VITE_ for Vite to expose it)
+ * Expected format: https://your-backend.onrender.com/api (include /api if backend routes are under /api)
  * @throws Error if VITE_API_BASE_URL is not set
  */
 function getBaseUrl(): string {
@@ -38,13 +39,15 @@ export async function fetchHealth(): Promise<
 > {
 	try {
 		const baseUrl = getBaseUrl();
-		const url = `${baseUrl}/api/health`;
+		// Base URL already includes /api, so just append /health
+		const url = `${baseUrl}/health`;
 
 		const response = await fetch(url, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
 			},
+			credentials: "include", // Include credentials for cross-origin requests
 		});
 
 		if (!response.ok) {
@@ -73,7 +76,8 @@ export async function fetchHealth(): Promise<
 
 /**
  * Generic API fetch utility
- * @param endpoint - API endpoint (e.g., '/api/users')
+ * @param endpoint - API endpoint (e.g., '/users' or 'users')
+ * Note: Do not include '/api' prefix as it's already in the base URL
  * @param options - Fetch options
  * @returns Promise with API response
  */
@@ -92,6 +96,7 @@ export async function apiFetch<T>(
 			"Content-Type": "application/json",
 			...options?.headers,
 		},
+		credentials: "include", // Include credentials for cross-origin requests
 	});
 
 	if (!response.ok) {
