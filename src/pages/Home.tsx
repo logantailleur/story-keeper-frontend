@@ -1,19 +1,22 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { ApiState, fetchHealth } from "../utils/api";
+import { useApiClient } from "../contexts/ProviderContext";
+import { fetchHealth } from "../utils/api";
+import { ApiState } from "../services/types";
 
 function Home() {
+	const apiClient = useApiClient();
 	const [healthState, setHealthState] = useState<
 		ApiState<{ status: string; timestamp?: string }>
 	>({ status: "loading" });
 
 	useEffect(() => {
 		const loadHealth = async () => {
-			const result = await fetchHealth();
+			const result = await fetchHealth(apiClient);
 			setHealthState(result);
 		};
 		loadHealth();
-	}, []);
+	}, [apiClient]);
 
 	return (
 		<Box sx={{ mt: 4 }}>

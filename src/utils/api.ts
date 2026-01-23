@@ -1,67 +1,29 @@
 /**
- * API utility for making HTTP requests
+ * API Service Layer
+ * 
+ * This file provides high-level API functions that use the provider system.
+ * All API calls go through the configured API client provider.
  */
+import { IApiClient } from "../services/api-client.interface";
+import { ApiState, ApiResponse } from "../services/types";
 
-export type ApiState<T> =
-	| { status: "loading" }
-	| { status: "success"; data: T }
-	| { status: "error"; error: string };
-
-export interface ApiResponse<T> {
-	data: T;
-	status: number;
-	statusText: string;
-}
-
-/**
- * Get the base API URL from environment variables
- * Reads from VITE_API_BASE_URL (must be prefixed with VITE_ for Vite to expose it)
- * Expected format: https://your-backend.onrender.com/api (include /api if backend routes are under /api)
- * @throws Error if VITE_API_BASE_URL is not set
- */
-function getBaseUrl(): string {
-	const baseUrl = import.meta.env.VITE_API_BASE_URL;
-	if (!baseUrl) {
-		throw new Error(
-			"VITE_API_BASE_URL environment variable is not set. " +
-				"Please create a .env file with VITE_API_BASE_URL=<your-backend-url>"
-		);
-	}
-	return baseUrl.replace(/\/$/, ""); // Remove trailing slash if present
-}
+// Re-export types for backward compatibility
+export type { ApiState, ApiResponse };
 
 /**
  * Fetch health check endpoint
- * @returns Promise that resolves to ApiState with health check data
  */
-export async function fetchHealth(): Promise<
-	ApiState<{ status: string; timestamp?: string }>
-> {
+export async function fetchHealth(
+	apiClient: IApiClient
+): Promise<ApiState<{ status: string; timestamp?: string }>> {
 	try {
-		const baseUrl = getBaseUrl();
-		// Base URL already includes /api, so just append /health
-		const url = `${baseUrl}/health`;
-
-		const response = await fetch(url, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			credentials: "include", // Include credentials for cross-origin requests
-		});
-
-		if (!response.ok) {
-			return {
-				status: "error",
-				error: `HTTP error! status: ${response.status} ${response.statusText}`,
-			};
-		}
-
-		const data = await response.json();
+		const response = await apiClient.get<{ status: string; timestamp?: string }>(
+			"/health"
+		);
 
 		return {
 			status: "success",
-			data,
+			data: response.data,
 		};
 	} catch (error) {
 		return {
@@ -75,41 +37,49 @@ export async function fetchHealth(): Promise<
 }
 
 /**
- * Generic API fetch utility
- * @param endpoint - API endpoint (e.g., '/users' or 'users')
- * Note: Do not include '/api' prefix as it's already in the base URL
- * @param options - Fetch options
- * @returns Promise with API response
+ * Generic API fetch utility (for use outside React components)
+ * Use the hook-based functions inside components, or pass apiClient directly
  */
 export async function apiFetch<T>(
+	apiClient: IApiClient,
 	endpoint: string,
-	options?: RequestInit
-): Promise<ApiResponse<T>> {
-	const baseUrl = getBaseUrl();
-	const url = `${baseUrl}${
-		endpoint.startsWith("/") ? endpoint : `/${endpoint}`
-	}`;
+	options?: {
+		method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+		body?: unknown;
+		headers?: Record<string, string>;
+	}
+): Promise<{ data: T; status: number; statusText: string }> {
+	const method = options?.method || "GET";
+	const body = options?.body;
 
-	const response = await fetch(url, {
-		...options,
-		headers: {
-			"Content-Type": "application/json",
-			...options?.headers,
-		},
-		credentials: "include", // Include credentials for cross-origin requests
-	});
-
-	if (!response.ok) {
-		throw new Error(
-			`HTTP error! status: ${response.status} ${response.statusText}`
-		);
+	let response;
+	switch (method) {
+		case "GET":
+			response = await apiClient.get<T>(endpoint, {
+				headers: options?.headers,
+			});
+			break;
+		case "POST":
+			response = await apiClient.post<T>(endpoint, body, {
+				headers: options?.headers,
+			});
+			break;
+		case "PUT":
+			response = await apiClient.put<T>(endpoint, body, {
+				headers: options?.headers,
+			});
+			break;
+		case "PATCH":
+			response = await apiClient.patch<T>(endpoint, body, {
+				headers: options?.headers,
+			});
+			break;
+		case "DELETE":
+			response = await apiClient.delete<T>(endpoint, {
+				headers: options?.headers,
+			});
+			break;
 	}
 
-	const data = await response.json();
-
-	return {
-		data,
-		status: response.status,
-		statusText: response.statusText,
-	};
+	return response;
 }
