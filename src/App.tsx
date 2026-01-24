@@ -8,8 +8,8 @@ import ThemeShowcase from "./pages/ThemeShowcase";
 function App() {
 	return (
 		<Routes>
-			<Route path="/health" element={<Health />} />
 			<Route path="/login" element={<Login />} />
+			<Route path="/health" element={<Health />} />
 			<Route path="/theme-showcase" element={<ThemeShowcase />} />
 
 			<Route element={<AppLayout />}>
