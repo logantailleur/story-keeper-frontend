@@ -1,85 +1,73 @@
 /**
- * API Service Layer
- * 
- * This file provides high-level API functions that use the provider system.
- * All API calls go through the configured API client provider.
+ * API layer: single fetch-based client and helpers.
+ * Base URL from VITE_API_BASE_URL; JWT attached automatically when stored.
  */
-import { IApiClient } from "../services/api-client.interface";
-import { ApiState, ApiResponse } from "../services/types";
+import { getApiBaseUrl } from "../config/api";
+import { ApiAuthService } from "../providers/api-auth-service";
+import { FetchApiClient } from "../providers/fetch-api-client";
+import type { IApiClient } from "../services/api-client.interface";
+import type { IAuthService } from "../services/auth.interface";
+import type { ApiResponse, ApiState } from "../services/types";
+import { AUTH_TOKEN_STORAGE_KEY, getStoredJwt, setStoredJwt } from "./jwt";
 
-// Re-export types for backward compatibility
-export type { ApiState, ApiResponse };
+export { AUTH_TOKEN_STORAGE_KEY, getStoredJwt, setStoredJwt };
+export type { ApiResponse, ApiState };
 
-/**
- * Fetch health check endpoint
- */
-export async function fetchHealth(
-	apiClient: IApiClient
-): Promise<ApiState<{ status: string; timestamp?: string }>> {
+const apiClient: IApiClient = new FetchApiClient(getApiBaseUrl());
+const authService: IAuthService = new ApiAuthService(apiClient);
+
+export function getApiClient(): IApiClient {
+	return apiClient;
+}
+
+export function getAuthService(): IAuthService {
+	return authService;
+}
+
+export async function fetchHealth(): Promise<
+	ApiState<{ status: string; timestamp?: string }>
+> {
 	try {
-		const response = await apiClient.get<{ status: string; timestamp?: string }>(
-			"/health"
-		);
-
-		return {
-			status: "success",
-			data: response.data,
-		};
-	} catch (error) {
+		const res = await apiClient.get<{
+			status: string;
+			timestamp?: string;
+		}>("/health");
+		return { status: "success", data: res.data };
+	} catch (err) {
 		return {
 			status: "error",
 			error:
-				error instanceof Error
-					? error.message
+				err instanceof Error
+					? err.message
 					: "An unknown error occurred",
 		};
 	}
 }
 
-/**
- * Generic API fetch utility (for use outside React components)
- * Use the hook-based functions inside components, or pass apiClient directly
- */
 export async function apiFetch<T>(
-	apiClient: IApiClient,
 	endpoint: string,
 	options?: {
 		method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 		body?: unknown;
 		headers?: Record<string, string>;
-	}
+	},
 ): Promise<{ data: T; status: number; statusText: string }> {
-	const method = options?.method || "GET";
+	const method = options?.method ?? "GET";
 	const body = options?.body;
+	const headers = options?.headers;
 
-	let response;
 	switch (method) {
 		case "GET":
-			response = await apiClient.get<T>(endpoint, {
-				headers: options?.headers,
-			});
-			break;
+			return apiClient.get<T>(endpoint, { headers });
 		case "POST":
-			response = await apiClient.post<T>(endpoint, body, {
-				headers: options?.headers,
-			});
-			break;
+			return apiClient.post<T>(endpoint, body, { headers });
 		case "PUT":
-			response = await apiClient.put<T>(endpoint, body, {
-				headers: options?.headers,
-			});
-			break;
+			return apiClient.put<T>(endpoint, body, { headers });
 		case "PATCH":
-			response = await apiClient.patch<T>(endpoint, body, {
-				headers: options?.headers,
-			});
-			break;
+			return apiClient.patch<T>(endpoint, body, { headers });
 		case "DELETE":
-			response = await apiClient.delete<T>(endpoint, {
-				headers: options?.headers,
-			});
-			break;
+			return apiClient.delete<T>(endpoint, { headers });
+		default:
+			return apiClient.get<T>(endpoint, { headers });
 	}
-
-	return response;
 }

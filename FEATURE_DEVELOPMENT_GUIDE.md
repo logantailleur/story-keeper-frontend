@@ -74,19 +74,22 @@ story-keeper-frontend/
 All environment variables must be prefixed with `VITE_` to be accessible in the application.
 
 **Required Variables:**
+
 - `VITE_API_BASE_URL` - Base URL for the backend API (e.g., `https://your-backend.onrender.com/api`)
 
 ### Setup Steps
 
 1. Copy `.env.example` to `.env.local`:
-   ```bash
-   cp .env.example .env.local
-   ```
+
+    ```bash
+    cp .env.example .env.local
+    ```
 
 2. Update `.env.local` with your actual values:
-   ```
-   VITE_API_BASE_URL=https://your-backend.onrender.com/api
-   ```
+
+    ```
+    VITE_API_BASE_URL=https://your-backend.onrender.com/api
+    ```
 
 3. Restart the dev server after changing environment variables
 
@@ -106,15 +109,16 @@ The project uses a discriminated union type for API state:
 
 ```typescript
 type ApiState<T> =
-  | { status: "loading" }
-  | { status: "success"; data: T }
-  | { status: "error"; error: string };
+	| { status: "loading" }
+	| { status: "success"; data: T }
+	| { status: "error"; error: string };
 ```
 
 **Usage Example:**
+
 ```typescript
-const [dataState, setDataState] = useState<ApiState<MyDataType>>({ 
-  status: "loading" 
+const [dataState, setDataState] = useState<ApiState<MyDataType>>({
+  status: "loading"
 });
 
 // In useEffect or event handler
@@ -168,6 +172,7 @@ Use the `sx` prop for styling:
 ```
 
 **Common MUI spacing shortcuts:**
+
 - `mt`, `mb`, `ml`, `mr` - margin top/bottom/left/right
 - `pt`, `pb`, `pl`, `pr` - padding top/bottom/left/right
 - `m`, `p` - margin/padding all sides
@@ -181,33 +186,35 @@ Use the `sx` prop for styling:
 ### Step 1: Create a New Page
 
 1. Create a new file in `src/pages/`:
-   ```typescript
-   // src/pages/MyNewPage.tsx
-   import { Box, Paper, Typography } from "@mui/material";
 
-   function MyNewPage() {
-     return (
-       <Box sx={{ mt: 4 }}>
-         <Paper elevation={3} sx={{ p: 4 }}>
-           <Typography variant="h4" component="h1" gutterBottom>
-             My New Page
-           </Typography>
-           {/* Your content here */}
-         </Paper>
-       </Box>
-     );
-   }
+    ```typescript
+    // src/pages/MyNewPage.tsx
+    import { Box, Paper, Typography } from "@mui/material";
 
-   export default MyNewPage;
-   ```
+    function MyNewPage() {
+      return (
+        <Box sx={{ mt: 4 }}>
+          <Paper elevation={3} sx={{ p: 4 }}>
+            <Typography variant="h4" component="h1" gutterBottom>
+              My New Page
+            </Typography>
+            {/* Your content here */}
+          </Paper>
+        </Box>
+      );
+    }
+
+    export default MyNewPage;
+    ```
 
 2. Add the route in `src/App.tsx`:
-   ```typescript
-   import MyNewPage from "./pages/MyNewPage";
 
-   // In the Routes component:
-   <Route path="/my-new-page" element={<MyNewPage />} />
-   ```
+    ```typescript
+    import MyNewPage from "./pages/MyNewPage";
+
+    // In the Routes component:
+    <Route path="/my-new-page" element={<MyNewPage />} />
+    ```
 
 ### Step 2: Add API Functions (if needed)
 
@@ -219,45 +226,51 @@ Add API functions to `src/utils/api.ts`:
  * @returns Promise that resolves to ApiState with your data type
  */
 export async function fetchMyData(): Promise<ApiState<MyDataType>> {
-  try {
-    const response = await apiFetch<MyDataType>("/my-endpoint", {
-      method: "GET",
-    });
+	try {
+		const response = await apiFetch<MyDataType>("/my-endpoint", {
+			method: "GET",
+		});
 
-    return {
-      status: "success",
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: error instanceof Error ? error.message : "An unknown error occurred",
-    };
-  }
+		return {
+			status: "success",
+			data: response.data,
+		};
+	} catch (error) {
+		return {
+			status: "error",
+			error:
+				error instanceof Error
+					? error.message
+					: "An unknown error occurred",
+		};
+	}
 }
 
 /**
  * POST data to your endpoint
  */
 export async function createMyData(
-  data: CreateMyDataType
+	data: CreateMyDataType,
 ): Promise<ApiState<MyDataType>> {
-  try {
-    const response = await apiFetch<MyDataType>("/my-endpoint", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+	try {
+		const response = await apiFetch<MyDataType>("/my-endpoint", {
+			method: "POST",
+			body: data,
+		});
 
-    return {
-      status: "success",
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: error instanceof Error ? error.message : "An unknown error occurred",
-    };
-  }
+		return {
+			status: "success",
+			data: response.data,
+		};
+	} catch (error) {
+		return {
+			status: "error",
+			error:
+				error instanceof Error
+					? error.message
+					: "An unknown error occurred",
+		};
+	}
 }
 ```
 
@@ -302,9 +315,11 @@ function MyNewPage() {
 
 ## API Integration
 
+The app uses a **single fetch-based API client** and **API-backed auth** (no provider switching). Configure `VITE_API_BASE_URL` in `.env`; the client attaches the stored JWT automatically.
+
 ### Using the API Utility
 
-The project provides `apiFetch` utility in `src/utils/api.ts`:
+`apiFetch` and helpers live in `src/utils/api.ts`:
 
 ```typescript
 import { apiFetch } from "../utils/api";
@@ -312,30 +327,30 @@ import { apiFetch } from "../utils/api";
 // GET request
 const response = await apiFetch<MyType>("/my-endpoint");
 
-// POST request
+// POST request — pass body as object; it is JSON-serialized for you
 const response = await apiFetch<MyType>("/my-endpoint", {
-  method: "POST",
-  body: JSON.stringify({ key: "value" }),
+	method: "POST",
+	body: { key: "value" },
 });
 
 // PUT request
 const response = await apiFetch<MyType>("/my-endpoint/123", {
-  method: "PUT",
-  body: JSON.stringify({ key: "updated value" }),
+	method: "PUT",
+	body: { key: "updated value" },
 });
 
 // DELETE request
 const response = await apiFetch<void>("/my-endpoint/123", {
-  method: "DELETE",
+	method: "DELETE",
 });
 ```
 
 ### Important Notes
 
-- **Base URL**: The base URL is automatically prepended. Don't include `/api` in your endpoint paths.
-- **Credentials**: All requests include `credentials: "include"` for CORS with cookies.
-- **Content-Type**: Automatically set to `application/json`.
-- **Error Handling**: `apiFetch` throws errors for non-OK responses. Wrap in try-catch or use the pattern shown in `fetchHealth()`.
+- **Base URL**: From `VITE_API_BASE_URL`. Endpoints are relative (e.g. `/health`, `/me`).
+- **Credentials**: Requests use `credentials: "include"` for CORS.
+- **Content-Type**: `application/json` when a body is sent.
+- **Errors**: `apiFetch` throws on non-OK responses. Use try/catch or the `fetchHealth()` pattern.
 
 ### Creating API Functions
 
@@ -343,23 +358,26 @@ Follow this pattern for new API functions:
 
 ```typescript
 export async function fetchMyResource(
-  id: string
+	id: string,
 ): Promise<ApiState<MyResource>> {
-  try {
-    const response = await apiFetch<MyResource>(`/my-resource/${id}`, {
-      method: "GET",
-    });
+	try {
+		const response = await apiFetch<MyResource>(`/my-resource/${id}`, {
+			method: "GET",
+		});
 
-    return {
-      status: "success",
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: error instanceof Error ? error.message : "An unknown error occurred",
-    };
-  }
+		return {
+			status: "success",
+			data: response.data,
+		};
+	} catch (error) {
+		return {
+			status: "error",
+			error:
+				error instanceof Error
+					? error.message
+					: "An unknown error occurred",
+		};
+	}
 }
 ```
 
@@ -397,13 +415,13 @@ The theme is defined in `src/main.tsx`. To customize:
 
 ```typescript
 const theme = createTheme({
-  palette: {
-    mode: "light", // or "dark"
-    primary: {
-      main: "#your-color",
-    },
-  },
-  // Add other theme customizations
+	palette: {
+		mode: "light", // or "dark"
+		primary: {
+			main: "#your-color",
+		},
+	},
+	// Add other theme customizations
 });
 ```
 
@@ -566,38 +584,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 ### Handling Authentication
 
-If you need to add authentication:
-
-1. Create an auth context/provider
-2. Store tokens in localStorage or cookies
-3. Add auth headers to API requests
-4. Protect routes with authentication checks
-
-Example API function with auth:
-
-```typescript
-export async function fetchProtectedData(): Promise<ApiState<MyData>> {
-  try {
-    const token = localStorage.getItem("authToken");
-    const response = await apiFetch<MyData>("/protected-endpoint", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    return {
-      status: "success",
-      data: response.data,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: error instanceof Error ? error.message : "An unknown error occurred",
-    };
-  }
-}
-```
+Auth is API-backed (login/register → JWT). The API client attaches the stored JWT to requests automatically. Use `useAuth()` from `contexts/AuthContext` for `user`, `signIn`, `signUp`, `signOut`, and `ProtectedRoute` for route guards. No need to add `Authorization` headers manually when using `apiFetch` or `getApiClient()`.
 
 ### Adding Loading States
 
@@ -686,22 +673,22 @@ const [state, setState] = useState<Type>(initialValue);
 
 // Effect
 useEffect(() => {
-  // Side effect
-  return () => {
-    // Cleanup
-  };
+	// Side effect
+	return () => {
+		// Cleanup
+	};
 }, [dependencies]);
 
 // Event handlers
 const handleClick = (e: React.MouseEvent) => {
-  e.preventDefault();
-  // Handle click
+	e.preventDefault();
+	// Handle click
 };
 
 // Form submission
 const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  // Handle submit
+	e.preventDefault();
+	// Handle submit
 };
 ```
 
@@ -715,13 +702,13 @@ setDataState(result);
 // POST request
 const result = await createMyData(data);
 if (result.status === "success") {
-  // Handle success
+	// Handle success
 }
 
 // Error handling
 if (result.status === "error") {
-  console.error(result.error);
-  // Show error to user
+	console.error(result.error);
+	// Show error to user
 }
 ```
 

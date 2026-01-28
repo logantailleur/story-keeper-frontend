@@ -31,16 +31,22 @@ export function AppLayout() {
 						open: mobileOpen,
 						onClose: () => setMobileOpen(false),
 						ModalProps: { keepMounted: true },
-				  } as const)
+					} as const)
 				: ({
 						variant: "permanent",
 						open: true,
-				  } as const),
-		[isMobile, mobileOpen]
+					} as const),
+		[isMobile, mobileOpen],
 	);
 
 	return (
-		<Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
+		<Box
+			sx={{
+				display: "flex",
+				minHeight: "100vh",
+				bgcolor: "background.default",
+			}}
+		>
 			<TopBar
 				isMobile={isMobile}
 				onMenuClick={() => setMobileOpen(true)}
@@ -89,7 +95,7 @@ export function AppLayout() {
 										top: 0,
 										height: "100vh",
 										zIndex: theme.zIndex.appBar + 1,
-								  }),
+									}),
 						},
 					}}
 				>
@@ -127,4 +133,3 @@ export function AppLayout() {
 		</Box>
 	);
 }
-

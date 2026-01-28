@@ -13,12 +13,13 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { AuthTagline } from "../components/auth/AuthTagline";
 import { useAuth } from "../contexts/AuthContext";
 
-function Login() {
+function Register() {
 	const navigate = useNavigate();
-	const { signIn } = useAuth();
+	const { signUp } = useAuth();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,13 +34,19 @@ function Login() {
 			setError("Password is required.");
 			return;
 		}
+		if (password !== confirmPassword) {
+			setError("Passwords do not match.");
+			return;
+		}
 
 		setIsSubmitting(true);
 		try {
-			await signIn(email.trim(), password);
+			await signUp(email.trim(), password);
 			navigate("/dashboard", { replace: true });
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Login failed.");
+			setError(
+				err instanceof Error ? err.message : "Registration failed.",
+			);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -74,7 +81,7 @@ function Login() {
 						align="center"
 						sx={{ fontSize: { xs: "1.5rem", sm: undefined } }}
 					>
-						Login
+						Register
 					</Typography>
 					<form onSubmit={handleSubmit} noValidate>
 						<TextField
@@ -94,25 +101,17 @@ function Login() {
 							onChange={(e) => setPassword(e.target.value)}
 							fullWidth
 							margin="normal"
-							autoComplete="current-password"
+							autoComplete="new-password"
 						/>
-						{/* <Box
-							sx={{
-								display: "flex",
-								justifyContent: "flex-end",
-								mt: -0.5,
-								mb: 0.5,
-							}}
-						>
-							<Link
-								component={RouterLink}
-								to="/forgot-password"
-								variant="body2"
-								underline="hover"
-							>
-								Forgot password?
-							</Link>
-						</Box> */}
+						<TextField
+							label="Confirm password"
+							type="password"
+							value={confirmPassword}
+							onChange={(e) => setConfirmPassword(e.target.value)}
+							fullWidth
+							margin="normal"
+							autoComplete="new-password"
+						/>
 						{error && (
 							<Alert severity="error" sx={{ mt: 2 }}>
 								{error}
@@ -126,7 +125,7 @@ function Login() {
 							disabled={isSubmitting}
 							sx={{ mt: 3, mb: 1 }}
 						>
-							{isSubmitting ? "Signing in..." : "Submit"}
+							{isSubmitting ? "Creating account..." : "Submit"}
 						</Button>
 						<Typography
 							variant="body2"
@@ -134,15 +133,15 @@ function Login() {
 							align="center"
 							sx={{ mt: 2 }}
 						>
-							Don&apos;t have an account?{" "}
+							Have an account?{" "}
 							<Link
 								component={RouterLink}
-								to="/register"
+								to="/login"
 								variant="body2"
 								underline="hover"
 								fontWeight={600}
 							>
-								Sign Up
+								Sign in
 							</Link>
 						</Typography>
 					</form>
@@ -153,4 +152,4 @@ function Login() {
 	);
 }
 
-export default Login;
+export default Register;
