@@ -8,13 +8,12 @@ import {
 	Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
-import { useApiClient } from "../contexts/ProviderContext";
+import { getApiBaseUrl } from "../config/api";
 import { fetchHealth } from "../utils/api";
 
 type HealthData = { status: string; timestamp?: string };
 
 export default function Health() {
-	const apiClient = useApiClient();
 	const [loading, setLoading] = useState(false);
 	const [data, setData] = useState<HealthData | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -22,7 +21,7 @@ export default function Health() {
 	const load = useCallback(async () => {
 		setLoading(true);
 		setError(null);
-		const result = await fetchHealth(apiClient);
+		const result = await fetchHealth();
 		if (result.status === "success") {
 			setData(result.data);
 		} else {
@@ -30,7 +29,7 @@ export default function Health() {
 			setError("Health check failed");
 		}
 		setLoading(false);
-	}, [apiClient]);
+	}, []);
 
 	useEffect(() => {
 		void load();
@@ -74,7 +73,7 @@ export default function Health() {
 									component="span"
 									sx={{ fontFamily: "monospace" }}
 								>
-									{apiClient.getBaseUrl()}
+									{getApiBaseUrl()}
 								</Box>
 							</Typography>
 

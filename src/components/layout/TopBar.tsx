@@ -5,14 +5,18 @@ import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import {
 	AppBar,
 	Box,
+	Divider,
 	FormControl,
 	IconButton,
+	Menu,
 	MenuItem,
 	Select,
 	Toolbar,
 } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 export type WorldOption = { id: string; name: string };
 
@@ -32,6 +36,9 @@ export function TopBar({
 	onWorldChange?: (worldId: string) => void;
 }) {
 	const { mode, setMode } = useColorScheme();
+	const { isAuthenticated, user, signOut } = useAuth();
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const userMenuOpen = Boolean(anchorEl);
 
 	return (
 		<AppBar
@@ -126,9 +133,40 @@ export function TopBar({
 					)}
 				</IconButton>
 
-				<IconButton aria-label="User menu">
+				<IconButton
+					aria-label="User menu"
+					onClick={(e) => setAnchorEl(e.currentTarget)}
+				>
 					<AccountCircleRoundedIcon />
 				</IconButton>
+				<Menu
+					anchorEl={anchorEl}
+					open={userMenuOpen}
+					onClose={() => setAnchorEl(null)}
+					anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+					transformOrigin={{ vertical: "top", horizontal: "right" }}
+				>
+					{isAuthenticated ? (
+						<>
+							<MenuItem disabled>
+								{user?.email ?? "Signed in"}
+							</MenuItem>
+							<Divider />
+							<MenuItem
+								onClick={async () => {
+									setAnchorEl(null);
+									await signOut();
+								}}
+							>
+								Logout
+							</MenuItem>
+						</>
+					) : (
+						<MenuItem component={NavLink} to="/login">
+							Login
+						</MenuItem>
+					)}
+				</Menu>
 			</Toolbar>
 		</AppBar>
 	);

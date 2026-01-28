@@ -1,8 +1,6 @@
 /**
- * Authentication Service Interface
- * 
- * This interface defines the contract for authentication providers.
- * Implementations can use different auth providers (Firebase, Auth0, Supabase, etc.)
+ * Authentication service contract.
+ * The app uses API-backed auth (login/register → JWT) via ApiAuthService.
  */
 export interface IAuthService {
 	/**
@@ -13,7 +11,11 @@ export interface IAuthService {
 	/**
 	 * Sign up a new user
 	 */
-	signUp(email: string, password: string, metadata?: Record<string, unknown>): Promise<AuthResult>;
+	signUp(
+		email: string,
+		password: string,
+		metadata?: Record<string, unknown>,
+	): Promise<AuthResult>;
 
 	/**
 	 * Sign out the current user

@@ -1,8 +1,5 @@
 /**
- * API Client Interface
- * 
- * This interface defines the contract for API clients.
- * Implementations can use fetch, axios, or any other HTTP library.
+ * API client contract. The app uses FetchApiClient (native fetch).
  */
 import { ApiResponse, RequestOptions } from "./types";
 
@@ -23,7 +20,7 @@ export interface IApiClient {
 	post<T>(
 		endpoint: string,
 		data?: unknown,
-		options?: RequestOptions
+		options?: RequestOptions,
 	): Promise<ApiResponse<T>>;
 
 	/**
@@ -32,7 +29,7 @@ export interface IApiClient {
 	put<T>(
 		endpoint: string,
 		data?: unknown,
-		options?: RequestOptions
+		options?: RequestOptions,
 	): Promise<ApiResponse<T>>;
 
 	/**
@@ -41,19 +38,22 @@ export interface IApiClient {
 	patch<T>(
 		endpoint: string,
 		data?: unknown,
-		options?: RequestOptions
+		options?: RequestOptions,
 	): Promise<ApiResponse<T>>;
 
 	/**
 	 * Make a DELETE request
 	 */
-	delete<T>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>>;
+	delete<T>(
+		endpoint: string,
+		options?: RequestOptions,
+	): Promise<ApiResponse<T>>;
 
 	/**
 	 * Make a generic request
 	 */
 	request<T>(
 		endpoint: string,
-		options?: RequestOptions
+		options?: RequestOptions,
 	): Promise<ApiResponse<T>>;
 }
