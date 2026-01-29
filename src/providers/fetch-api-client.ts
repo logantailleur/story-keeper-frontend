@@ -123,7 +123,24 @@ export class FetchApiClient implements IApiClient {
 			);
 		}
 
-		const data = await response.json();
+		// Handle empty responses (e.g., 204 No Content for DELETE requests)
+		// Read response as text first to check if body is empty
+		const text = await response.text();
+
+		let data: T;
+		if (text.trim() === "" || response.status === 204) {
+			// For empty responses or 204 No Content, return undefined as data
+			data = undefined as T;
+		} else {
+			try {
+				data = JSON.parse(text);
+			} catch (parseError) {
+				// If JSON parsing fails, throw a more descriptive error
+				throw new Error(
+					`Failed to parse JSON response: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
+				);
+			}
+		}
 
 		return {
 			data,
