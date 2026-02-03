@@ -10,9 +10,9 @@ import {
 	Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { WorldCard } from "../components/worlds";
+import { WorldCard, WorldDialog } from "../components/worlds";
 import type { ApiState, World } from "../utils/api";
-import { deleteWorld, fetchWorlds } from "../utils/api";
+import { createWorld, deleteWorld, fetchWorlds } from "../utils/api";
 
 function Dashboard() {
 	const [worldsState, setWorldsState] = useState<ApiState<World[]>>({
@@ -21,6 +21,7 @@ function Dashboard() {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
 	const loadWorlds = async () => {
 		const result = await fetchWorlds();
@@ -32,8 +33,25 @@ function Dashboard() {
 	}, []);
 
 	const handleCreateWorld = () => {
-		// Placeholder: create-world flow to be implemented
-		console.log("Create world — coming soon");
+		setCreateDialogOpen(true);
+	};
+
+	const handleCreateSave = async (payload: {
+		name: string;
+		startYear: number;
+		currentYear: number;
+		description?: string;
+	}) => {
+		const result = await createWorld({
+			...payload,
+			id: "", // Backend will assign id
+		} as World);
+		if (result.status === "error") {
+			throw new Error(result.error);
+		}
+		setSnackbarMessage("World created successfully");
+		setSnackbarOpen(true);
+		await loadWorlds();
 	};
 
 	const handleEdit = (id: string) => {
@@ -166,6 +184,12 @@ function Dashboard() {
 			>
 				<AddRoundedIcon />
 			</Fab>
+
+			<WorldDialog
+				open={createDialogOpen}
+				onClose={() => setCreateDialogOpen(false)}
+				onSave={handleCreateSave}
+			/>
 
 			<Snackbar
 				open={snackbarOpen}

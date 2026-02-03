@@ -40,3 +40,44 @@ export async function deleteWorld(worldId: string): Promise<ApiState<void>> {
 		};
 	}
 }
+
+export async function createWorld(world: World): Promise<ApiState<World>> {
+	try {
+		const api = getApiClient();
+		await api.post<World>("/worlds", world);
+		return {
+			status: "success",
+			data: world,
+		};
+	} catch (err) {
+		return {
+			status: "error",
+			error:
+				err instanceof Error
+					? err.message
+					: "An unknown error occurred",
+		};
+	}
+}
+
+export async function updateWorld(
+	worldId: string,
+	world: World,
+): Promise<ApiState<World>> {
+	try {
+		const api = getApiClient();
+		await api.patch<World>(`/worlds/${worldId}`, world);
+		return {
+			status: "success",
+			data: world,
+		};
+	} catch (err) {
+		return {
+			status: "error",
+			error:
+				err instanceof Error
+					? err.message
+					: "An unknown error occurred",
+		};
+	}
+}
