@@ -2,6 +2,14 @@
  * Common types and interfaces for services
  */
 
+export interface World {
+	id: string;
+	name: string;
+	startYear: number;
+	currentYear: number;
+	description?: string;
+}
+
 export type ApiState<T> =
 	| { status: "loading" }
 	| { status: "success"; data: T }
