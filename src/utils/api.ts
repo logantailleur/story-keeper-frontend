@@ -5,5 +5,10 @@
 export type { ApiResponse, ApiState, World } from "../services/types";
 export { apiFetch, getApiClient, getAuthService } from "./api/client";
 export { fetchHealth } from "./api/health";
-export { createWorld, deleteWorld, fetchWorlds } from "./api/worlds";
+export {
+	createWorld,
+	deleteWorld,
+	fetchWorlds,
+	updateWorld,
+} from "./api/worlds";
 export { AUTH_TOKEN_STORAGE_KEY, getStoredJwt, setStoredJwt } from "./jwt";

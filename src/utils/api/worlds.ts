@@ -44,10 +44,10 @@ export async function deleteWorld(worldId: string): Promise<ApiState<void>> {
 export async function createWorld(world: World): Promise<ApiState<World>> {
 	try {
 		const api = getApiClient();
-		await api.post<World>("/worlds", world);
+		const res = await api.post<World>("/worlds", world);
 		return {
 			status: "success",
-			data: world,
+			data: res.data ?? world,
 		};
 	} catch (err) {
 		return {
@@ -66,10 +66,10 @@ export async function updateWorld(
 ): Promise<ApiState<World>> {
 	try {
 		const api = getApiClient();
-		await api.patch<World>(`/worlds/${worldId}`, world);
+		const res = await api.patch<World>(`/worlds/${worldId}`, world);
 		return {
 			status: "success",
-			data: world,
+			data: res.data ?? world,
 		};
 	} catch (err) {
 		return {

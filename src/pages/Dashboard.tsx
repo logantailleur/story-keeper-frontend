@@ -12,7 +12,12 @@ import {
 import { useEffect, useState } from "react";
 import { WorldCard, WorldDialog } from "../components/worlds";
 import type { ApiState, World } from "../utils/api";
-import { createWorld, deleteWorld, fetchWorlds } from "../utils/api";
+import {
+	createWorld,
+	deleteWorld,
+	fetchWorlds,
+	updateWorld,
+} from "../utils/api";
 
 function Dashboard() {
 	const [worldsState, setWorldsState] = useState<ApiState<World[]>>({
@@ -22,6 +27,8 @@ function Dashboard() {
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
+	const [editingWorld, setEditingWorld] = useState<World | null>(null);
 
 	const loadWorlds = async () => {
 		const result = await fetchWorlds();
@@ -54,9 +61,34 @@ function Dashboard() {
 		await loadWorlds();
 	};
 
+	const handleEditSave = async (payload: {
+		name: string;
+		startYear: number;
+		currentYear: number;
+		description?: string;
+	}) => {
+		if (!editingWorld) return;
+		const result = await updateWorld(editingWorld.id, {
+			...editingWorld,
+			...payload,
+		});
+		if (result.status === "error") throw new Error(result.error);
+		setSnackbarMessage("World updated successfully");
+		setSnackbarOpen(true);
+		setEditDialogOpen(false);
+		setEditingWorld(null);
+		await loadWorlds();
+	};
+
 	const handleEdit = (id: string) => {
-		// Placeholder: edit-world flow to be implemented
-		console.log("Edit world:", id);
+		const world =
+			worldsState.status === "success"
+				? worldsState.data.find((w) => w.id === id)
+				: null;
+		if (world) {
+			setEditingWorld(world);
+			setEditDialogOpen(true);
+		}
 	};
 
 	const handleDelete = async (id: string) => {
@@ -186,9 +218,21 @@ function Dashboard() {
 			</Fab>
 
 			<WorldDialog
+				mode="create"
 				open={createDialogOpen}
 				onClose={() => setCreateDialogOpen(false)}
 				onSave={handleCreateSave}
+			/>
+
+			<WorldDialog
+				mode="edit"
+				open={editDialogOpen}
+				onClose={() => {
+					setEditDialogOpen(false);
+					setEditingWorld(null);
+				}}
+				onSave={handleEditSave}
+				initialWorld={editingWorld ?? undefined}
 			/>
 
 			<Snackbar

@@ -8,7 +8,8 @@ import {
 	DialogTitle,
 	TextField,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { World } from "../../services/types";
 
 interface FormState {
 	name: string;
@@ -63,6 +64,7 @@ function validateForm(values: FormState): ValidationResult {
 }
 
 export interface WorldFormPayload {
+	id?: string;
 	name: string;
 	startYear: number;
 	currentYear: number;
@@ -73,14 +75,16 @@ interface WorldDialogProps {
 	open: boolean;
 	onClose: () => void;
 	onSave: (data: WorldFormPayload) => Promise<void>;
-	title?: string;
+	mode: "create" | "edit";
+	initialWorld?: World;
 }
 
 function WorldDialog({
 	open,
 	onClose,
 	onSave,
-	title = "Create World",
+	mode,
+	initialWorld,
 }: WorldDialogProps) {
 	const [formState, setFormState] = useState<FormState>({
 		name: "",
@@ -90,6 +94,19 @@ function WorldDialog({
 	});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitAttempted, setSubmitAttempted] = useState(false);
+
+	useEffect(() => {
+		if (open && mode === "edit" && initialWorld) {
+			setFormState({
+				name: initialWorld.name,
+				startYear: initialWorld.startYear.toString(),
+				currentYear: initialWorld.currentYear.toString(),
+				description: initialWorld.description || "",
+			});
+		} else if (open && mode === "create") {
+			resetForm();
+		}
+	}, [open, mode, initialWorld]);
 
 	const validation = validateForm(formState);
 	const { valid, errors = {} } = validation;
@@ -123,6 +140,7 @@ function WorldDialog({
 		setIsSubmitting(true);
 		try {
 			await onSave({
+				id: initialWorld?.id,
 				name: formState.name.trim(),
 				startYear: parseInt(formState.startYear, 10),
 				currentYear: parseInt(formState.currentYear, 10),
@@ -156,7 +174,9 @@ function WorldDialog({
 			fullWidth
 			maxWidth="sm"
 		>
-			<DialogTitle id="world-dialog-title">{title}</DialogTitle>
+			<DialogTitle id="world-dialog-title">
+				{mode === "create" ? "Create world" : "Edit world"}
+			</DialogTitle>
 			<form onSubmit={handleSubmit} noValidate>
 				<DialogContent>
 					{formState.backendError && (
@@ -251,7 +271,13 @@ function WorldDialog({
 						variant="contained"
 						disabled={!valid || isSubmitting}
 					>
-						{isSubmitting ? "Saving..." : "Save"}
+						{isSubmitting
+							? mode === "create"
+								? "Creating..."
+								: "Saving..."
+							: mode === "create"
+							? "Create"
+							: "Save"}
 					</Button>
 				</DialogActions>
 			</form>

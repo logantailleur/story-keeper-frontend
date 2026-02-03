@@ -4,7 +4,7 @@
  */
 export { apiFetch, getApiClient, getAuthService } from "./client";
 export { fetchHealth } from "./health";
-export { createWorld, deleteWorld, fetchWorlds } from "./worlds";
+export { createWorld, deleteWorld, fetchWorlds, updateWorld } from "./worlds";
 
 export { AUTH_TOKEN_STORAGE_KEY, getStoredJwt, setStoredJwt } from "../jwt";
 
