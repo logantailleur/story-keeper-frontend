@@ -74,20 +74,11 @@ export function TopBar({
 						alignItems: "center",
 						textDecoration: "none",
 						color: "inherit",
+						fontWeight: 600,
+						fontSize: "1.125rem",
 					}}
 				>
-					<Box
-						component="img"
-						src="/branding/sk-logo-lg.png"
-						alt="Story Keeper"
-						sx={{
-							// Slightly larger than MUI Toolbar defaults (regular variant)
-							height: { xs: 60, sm: 68 },
-							width: "auto",
-							display: "block",
-							objectFit: "contain",
-						}}
-					/>
+					Story Keeper
 				</Box>
 
 				<FormControl size="small" sx={{ minWidth: 200 }}>
