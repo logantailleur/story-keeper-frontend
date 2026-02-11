@@ -6,11 +6,9 @@ import {
 	AppBar,
 	Box,
 	Divider,
-	FormControl,
 	IconButton,
 	Menu,
 	MenuItem,
-	Select,
 	Toolbar,
 } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
@@ -18,22 +16,14 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
-export type WorldOption = { id: string; name: string };
-
 export function TopBar({
 	isMobile,
 	onMenuClick,
 	drawerWidth = 0,
-	worlds = [],
-	worldId = "",
-	onWorldChange,
 }: {
 	isMobile: boolean;
 	onMenuClick: () => void;
 	drawerWidth?: number;
-	worlds?: WorldOption[];
-	worldId?: string;
-	onWorldChange?: (worldId: string) => void;
 }) {
 	const { mode, setMode } = useColorScheme();
 	const { isAuthenticated, user, signOut } = useAuth();
@@ -74,51 +64,12 @@ export function TopBar({
 						alignItems: "center",
 						textDecoration: "none",
 						color: "inherit",
+						fontWeight: 600,
+						fontSize: "1.125rem",
 					}}
 				>
-					<Box
-						component="img"
-						src="/branding/sk-logo-lg.png"
-						alt="Story Keeper"
-						sx={{
-							// Slightly larger than MUI Toolbar defaults (regular variant)
-							height: { xs: 60, sm: 68 },
-							width: "auto",
-							display: "block",
-							objectFit: "contain",
-						}}
-					/>
+					Story Keeper
 				</Box>
-
-				<FormControl size="small" sx={{ minWidth: 200 }}>
-					<Select
-						value={worldId}
-						displayEmpty
-						onChange={(e) =>
-							onWorldChange?.(String(e.target.value))
-						}
-						renderValue={(value) => {
-							if (!value) return "World";
-							return (
-								worlds.find((w) => w.id === value)?.name ??
-								"World"
-							);
-						}}
-						sx={{
-							borderRadius: 2,
-							bgcolor: "background.paper",
-						}}
-					>
-						<MenuItem value="" disabled>
-							World
-						</MenuItem>
-						{worlds.map((w) => (
-							<MenuItem key={w.id} value={w.id}>
-								{w.name}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
 
 				<Box sx={{ flexGrow: 1 }} />
 

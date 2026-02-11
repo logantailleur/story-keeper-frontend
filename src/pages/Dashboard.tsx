@@ -10,6 +10,8 @@ import {
 	Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useWorld } from "../contexts/WorldContext";
 import { WorldCard, WorldDialog } from "../components/worlds";
 import type { ApiState, World } from "../utils/api";
 import {
@@ -18,12 +20,14 @@ import {
 	fetchWorlds,
 	updateWorld,
 } from "../utils/api";
+import { fetchEvents } from "../utils/api/events";
 
 function Dashboard() {
+	const navigate = useNavigate();
+	const { worldId, setWorldId } = useWorld();
 	const [worldsState, setWorldsState] = useState<ApiState<World[]>>({
 		status: "loading",
 	});
-	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -99,8 +103,8 @@ function Dashboard() {
 			// Refresh the worlds list
 			await loadWorlds();
 			// Clear selection if the deleted world was selected
-			if (selectedId === id) {
-				setSelectedId(null);
+			if (worldId === id) {
+				setWorldId("");
 			}
 		} else {
 			// result.status === "error"
@@ -112,8 +116,14 @@ function Dashboard() {
 		}
 	};
 
-	const handleSelect = (id: string) => {
-		setSelectedId((prev) => (prev === id ? null : id));
+	const handleOpenWorld = async (id: string) => {
+		setWorldId(String(id));
+		const result = await fetchEvents(String(id));
+		if (result.status === "success" && result.data.length === 0) {
+			navigate("/events");
+		} else {
+			navigate("/timeline");
+		}
 	};
 
 	const handleCloseSnackbar = () => {
@@ -192,8 +202,8 @@ function Dashboard() {
 								>
 									<WorldCard
 										world={world}
-										isSelected={selectedId === world.id}
-										onSelect={handleSelect}
+										isSelected={false}
+										onSelect={handleOpenWorld}
 										onEdit={handleEdit}
 										onDelete={handleDelete}
 									/>

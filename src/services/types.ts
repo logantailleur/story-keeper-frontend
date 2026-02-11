@@ -10,6 +10,14 @@ export interface World {
 	description?: string;
 }
 
+export interface Event {
+	id: string;
+	title: string;
+	year: number;
+	description: string;
+	worldId: string;
+}
+
 export type ApiState<T> =
 	| { status: "loading" }
 	| { status: "success"; data: T }
