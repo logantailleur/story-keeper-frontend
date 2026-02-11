@@ -183,6 +183,7 @@ export default function Events() {
 								gap: 3,
 								position: "relative",
 								mt: 2,
+								pb: 10,
 							}}
 						>
 							{/* Timeline line */}

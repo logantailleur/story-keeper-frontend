@@ -84,19 +84,26 @@ function EventCard({ event, onEdit, onDelete }: EventCardProps) {
 				>
 					<CardHeader
 						title={
-							<Typography variant="h5" component="h2" fontWeight={600}>
-								{event.title}
-							</Typography>
-						}
-						subheader={
-							<Typography
-								variant="h6"
-								color="primary.main"
-								fontWeight={500}
-								sx={{ mt: 0.5 }}
+							<Box
+								sx={{
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "space-between",
+									gap: 2,
+									flexWrap: "wrap",
+								}}
 							>
-								{event.year}
-							</Typography>
+								<Typography variant="h5" component="h2" fontWeight={600}>
+									{event.title}
+								</Typography>
+								<Typography
+									variant="h6"
+									color="primary.main"
+									fontWeight={500}
+								>
+									{event.year}
+								</Typography>
+							</Box>
 						}
 						sx={{
 							pb: 1,
