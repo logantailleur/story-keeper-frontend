@@ -30,7 +30,7 @@ export default function Events() {
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-
+	const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
 	const loadEvents = async () => {
 		const result = await fetchEvents(worldId);
 		setEventsState(result);
@@ -39,6 +39,10 @@ export default function Events() {
 	useEffect(() => {
 		loadEvents();
 	}, []);
+
+	const handleSelectEvent = (id: string) => {
+		setSelectedEvent(id);
+	};
 
 	const handleCreateSave = async (payload: {
 		title: string;
@@ -184,7 +188,12 @@ export default function Events() {
 									key={event.id}
 									size={{ xs: 12, sm: 6, md: 4 }}
 								>
-									<EventCard event={event} />
+									<EventCard
+										event={event}
+										onSelect={handleSelectEvent}
+										onEdit={handleEdit}
+										onDelete={handleDelete}
+									/>
 								</Grid>
 							))}
 						</Grid>
