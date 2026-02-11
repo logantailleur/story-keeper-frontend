@@ -1,20 +1,50 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { Box, Drawer, Fab, Toolbar, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet } from "react-router-dom";
+import type { WorldOption } from "./TopBar";
+import { WorldProvider } from "../../contexts/WorldContext";
 import { PageContainer } from "./PageContainer";
 import { SidebarNav } from "./SidebarNav";
 import { TopBar } from "./TopBar";
+import { fetchWorlds } from "../../utils/api/worlds";
 
 const DRAWER_WIDTH_EXPANDED = 280;
 const DRAWER_WIDTH_COLLAPSED = 76;
+const WORLD_ID_STORAGE_KEY = "story-keeper-world-id";
 
 export function AppLayout() {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [sidebarExpanded, setSidebarExpanded] = useState(false);
+	const [worlds, setWorlds] = useState<WorldOption[]>([]);
+	const [worldId, setWorldId] = useState<string>(() => {
+		if (typeof window === "undefined") return "";
+		return String(
+			localStorage.getItem(WORLD_ID_STORAGE_KEY) ?? "",
+		);
+	});
+
+	useEffect(() => {
+		fetchWorlds().then((result) => {
+			if (result.status === "success") {
+				setWorlds(
+					result.data.map((w) => ({
+						id: String(w.id),
+						name: w.name,
+					})),
+				);
+			}
+		});
+	}, []);
+
+	const handleWorldChange = (id: string) => {
+		const next = String(id);
+		setWorldId(next);
+		localStorage.setItem(WORLD_ID_STORAGE_KEY, next);
+	};
 
 	const reservedDesktopWidth = DRAWER_WIDTH_COLLAPSED;
 	const paperWidth = isMobile
@@ -40,17 +70,24 @@ export function AppLayout() {
 	);
 
 	return (
-		<Box
-			sx={{
-				display: "flex",
-				minHeight: "100vh",
-				bgcolor: "background.default",
-			}}
+		<WorldProvider
+			worldId={worldId}
+			setWorldId={handleWorldChange}
 		>
-			<TopBar
+			<Box
+				sx={{
+					display: "flex",
+					minHeight: "100vh",
+					bgcolor: "background.default",
+				}}
+			>
+				<TopBar
 				isMobile={isMobile}
 				onMenuClick={() => setMobileOpen(true)}
 				drawerWidth={reservedDesktopWidth}
+				worlds={worlds}
+				worldId={worldId}
+				onWorldChange={handleWorldChange}
 			/>
 
 			<Box
@@ -130,6 +167,7 @@ export function AppLayout() {
 					<AddRoundedIcon />
 				</Fab>
 			)}
-		</Box>
+			</Box>
+		</WorldProvider>
 	);
 }

@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 export type WorldOption = { id: string; name: string };
@@ -37,8 +37,10 @@ export function TopBar({
 }) {
 	const { mode, setMode } = useColorScheme();
 	const { isAuthenticated, user, signOut } = useAuth();
+	const location = useLocation();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const userMenuOpen = Boolean(anchorEl);
+	const isDashboard = location.pathname === "/dashboard";
 
 	return (
 		<AppBar
@@ -81,35 +83,38 @@ export function TopBar({
 					Story Keeper
 				</Box>
 
-				<FormControl size="small" sx={{ minWidth: 200 }}>
-					<Select
-						value={worldId}
-						displayEmpty
-						onChange={(e) =>
-							onWorldChange?.(String(e.target.value))
-						}
-						renderValue={(value) => {
-							if (!value) return "World";
-							return (
-								worlds.find((w) => w.id === value)?.name ??
-								"World"
-							);
-						}}
-						sx={{
-							borderRadius: 2,
-							bgcolor: "background.paper",
-						}}
-					>
-						<MenuItem value="" disabled>
-							World
-						</MenuItem>
-						{worlds.map((w) => (
-							<MenuItem key={w.id} value={w.id}>
-								{w.name}
+				{!isDashboard && (
+					<FormControl size="small" sx={{ minWidth: 200 }}>
+						<Select
+							value={worldId ?? ""}
+							displayEmpty
+							onChange={(e) =>
+								onWorldChange?.(String(e.target.value))
+							}
+							renderValue={(value) => {
+								const id = String(value ?? "");
+								if (!id) return "World";
+								return (
+									worlds.find((w) => String(w.id) === id)
+										?.name ?? "World"
+								);
+							}}
+							sx={{
+								borderRadius: 2,
+								bgcolor: "background.paper",
+							}}
+						>
+							<MenuItem value="" disabled>
+								World
 							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+							{worlds.map((w) => (
+								<MenuItem key={w.id} value={String(w.id)}>
+									{w.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				)}
 
 				<Box sx={{ flexGrow: 1 }} />
 
