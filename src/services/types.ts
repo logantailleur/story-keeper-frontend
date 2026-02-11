@@ -18,6 +18,20 @@ export interface Event {
 	worldId: string;
 }
 
+export enum FigureType {
+	PERSON = "PERSON",
+	FACTION = "FACTION",
+}
+
+export interface Figure {
+	id: string;
+	name: string;
+	type: FigureType;
+	description: string;
+	worldId: string;
+	eventIds?: (string | number)[];
+}
+
 export type ApiState<T> =
 	| { status: "loading" }
 	| { status: "success"; data: T }

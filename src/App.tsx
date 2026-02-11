@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Events from "./pages/Events";
+import Figures from "./pages/Figures";
 import Health from "./pages/Health";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -27,6 +28,7 @@ function App() {
 					<Route path="/dashboard" element={<Dashboard />} />
 					<Route path="/timeline" element={<Timeline />} />
 					<Route path="/events" element={<Events />} />
+					<Route path="/figures" element={<Figures />} />
 				</Route>
 			</Route>
 		</Routes>

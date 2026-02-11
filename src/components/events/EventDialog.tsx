@@ -1,13 +1,21 @@
+import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import {
 	Alert,
+	Box,
 	Button,
+	Chip,
+	CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
 	DialogTitle,
 	TextField,
+	Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import type { Figure } from "../../services/types";
+import { fetchFigures } from "../../utils/api/figures";
 
 interface FormState {
 	title: string;
@@ -83,6 +91,7 @@ function EventDialog({
 	initialEvent,
 	worldId: worldIdProp,
 }: EventDialogProps) {
+	const navigate = useNavigate();
 	const [formState, setFormState] = useState<FormState>({
 		title: "",
 		year: "",
@@ -91,6 +100,8 @@ function EventDialog({
 	});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitAttempted, setSubmitAttempted] = useState(false);
+	const [linkedFigures, setLinkedFigures] = useState<Figure[]>([]);
+	const [linkedFiguresLoading, setLinkedFiguresLoading] = useState(false);
 
 	useEffect(() => {
 		if (open && mode === "edit" && initialEvent) {
@@ -109,6 +120,31 @@ function EventDialog({
 			});
 		}
 	}, [open, mode, initialEvent, worldIdProp]);
+
+	// Fetch figures linked to this event when in edit mode
+	useEffect(() => {
+		if (!open || mode !== "edit" || !initialEvent?.id || !initialEvent.worldId) {
+			setLinkedFigures([]);
+			return;
+		}
+		let cancelled = false;
+		setLinkedFiguresLoading(true);
+		fetchFigures(initialEvent.worldId, { limit: 500 })
+			.then((result) => {
+				if (cancelled || result.status !== "success") return;
+				const eventIdStr = String(initialEvent.id);
+				const linked = result.data.figures.filter((f) =>
+					f.eventIds?.some((id) => String(id) === eventIdStr),
+				);
+				setLinkedFigures(linked);
+			})
+			.finally(() => {
+				if (!cancelled) setLinkedFiguresLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [open, mode, initialEvent?.id, initialEvent?.worldId]);
 
 	const validation = validateForm(formState, mode);
 	const { valid, errors = {} } = validation;
@@ -240,6 +276,52 @@ function EventDialog({
 						rows={3}
 						required
 					/>
+					{mode === "edit" && (
+						<Box sx={{ mt: 2 }}>
+							<Typography
+								variant="subtitle2"
+								color="text.secondary"
+								sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}
+							>
+								<PeopleRoundedIcon fontSize="small" />
+								Linked figures
+							</Typography>
+							{linkedFiguresLoading ? (
+								<Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 1 }}>
+									<CircularProgress size={20} />
+									<Typography variant="body2" color="text.secondary">
+										Loading…
+									</Typography>
+								</Box>
+							) : linkedFigures.length === 0 ? (
+								<Typography variant="body2" color="text.disabled">
+									No figures linked to this event. Link figures from the Figures page.
+								</Typography>
+							) : (
+								<Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+									{linkedFigures.map((figure) => (
+										<Chip
+											key={figure.id}
+											label={figure.name}
+											size="small"
+											clickable
+											onClick={() => {
+												onClose();
+												navigate("/figures", {
+													state: { openFigureId: figure.id },
+												});
+											}}
+											sx={{
+												"&:hover": {
+													bgcolor: "action.selected",
+												},
+											}}
+										/>
+									))}
+								</Box>
+							)}
+						</Box>
+					)}
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleClose} disabled={isSubmitting}>
