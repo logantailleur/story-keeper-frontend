@@ -3,8 +3,8 @@ import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import {
 	Box,
 	Button,
-	CardActionArea,
 	CardContent,
+	CardHeader,
 	Dialog,
 	DialogActions,
 	DialogContent,
@@ -19,12 +19,11 @@ import type { Event } from "../../services/types";
 
 interface EventCardProps {
 	event: Event;
-	onSelect: (id: string) => void;
 	onEdit: (id: string) => void;
 	onDelete: (id: string) => Promise<void>;
 }
 
-function EventCard({ event, onSelect, onEdit, onDelete }: EventCardProps) {
+function EventCard({ event, onEdit, onDelete }: EventCardProps) {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
 
@@ -40,10 +39,6 @@ function EventCard({ event, onSelect, onEdit, onDelete }: EventCardProps) {
 	const handleEditClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		onEdit(event.id);
-	};
-
-	const handleCardClick = () => {
-		onSelect(event.id);
 	};
 
 	const handleDeleteConfirm = async () => {
@@ -62,71 +57,92 @@ function EventCard({ event, onSelect, onEdit, onDelete }: EventCardProps) {
 		setDeleteDialogOpen(false);
 	};
 
-	console.log(event);
 	return (
 		<>
 			<Card
 				variant="outlined"
 				sx={{
-					height: "100%",
+					width: "100%",
 					display: "flex",
 					flexDirection: "column",
+					position: "relative",
+					transition: "all 0.2s ease-in-out",
+					"&:hover": {
+						boxShadow: 2,
+						transform: "translateY(-2px)",
+					},
 				}}
 			>
-				<CardActionArea
-					onClick={handleCardClick}
+				<Box
 					sx={{
 						flex: 1,
 						display: "flex",
+						flexDirection: "column",
 						alignItems: "stretch",
 						justifyContent: "flex-start",
 					}}
 				>
-					<CardContent
-						sx={{
-							p: 2,
-							display: "flex",
-							flexDirection: "column",
-							width: "100%",
-						}}
-					>
-						<Box sx={{ flex: 1 }}>
-							<Typography variant="h6" gutterBottom>
+					<CardHeader
+						title={
+							<Typography variant="h5" component="h2" fontWeight={600}>
 								{event.title}
 							</Typography>
+						}
+						subheader={
 							<Typography
-								variant="body2"
-								color="text.secondary"
-								gutterBottom
+								variant="h6"
+								color="primary.main"
+								fontWeight={500}
+								sx={{ mt: 0.5 }}
 							>
 								{event.year}
 							</Typography>
-							{event.description && (
-								<Typography
-									variant="body2"
-									color="text.secondary"
-									sx={{
-										display: "-webkit-box",
-										WebkitLineClamp: 2,
-										WebkitBoxOrient: "vertical",
-										overflow: "hidden",
-										mt: 1,
-									}}
-								>
-									{event.description}
-								</Typography>
-							)}
-						</Box>
+						}
+						sx={{
+							pb: 1,
+							"& .MuiCardHeader-content": {
+								width: "100%",
+							},
+						}}
+					/>
+					<CardContent
+						sx={{
+							pt: 0,
+							pb: 3,
+							flex: 1,
+						}}
+					>
+						{event.description ? (
+							<Typography
+								variant="body1"
+								color="text.secondary"
+								sx={{
+									lineHeight: 1.7,
+									whiteSpace: "pre-wrap",
+								}}
+							>
+								{event.description}
+							</Typography>
+						) : (
+							<Typography
+								variant="body2"
+								color="text.disabled"
+								fontStyle="italic"
+							>
+								No description provided
+							</Typography>
+						)}
 					</CardContent>
-				</CardActionArea>
+				</Box>
 				<Box
 					sx={{
 						display: "flex",
 						gap: 0.5,
-						p: 2,
-						pt: 1,
+						p: 1.5,
+						justifyContent: "flex-end",
 						borderTop: 1,
 						borderColor: "divider",
+						bgcolor: "action.hover",
 					}}
 				>
 					<IconButton
@@ -137,7 +153,7 @@ function EventCard({ event, onSelect, onEdit, onDelete }: EventCardProps) {
 							color: "text.secondary",
 							"&:hover": {
 								color: "primary.main",
-								bgcolor: "action.hover",
+								bgcolor: "background.paper",
 							},
 						}}
 					>
@@ -151,7 +167,7 @@ function EventCard({ event, onSelect, onEdit, onDelete }: EventCardProps) {
 							color: "text.secondary",
 							"&:hover": {
 								color: "error.main",
-								bgcolor: "action.hover",
+								bgcolor: "background.paper",
 							},
 						}}
 					>

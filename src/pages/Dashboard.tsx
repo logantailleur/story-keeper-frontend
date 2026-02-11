@@ -20,6 +20,7 @@ import {
 	fetchWorlds,
 	updateWorld,
 } from "../utils/api";
+import { fetchEvents } from "../utils/api/events";
 
 function Dashboard() {
 	const navigate = useNavigate();
@@ -115,9 +116,14 @@ function Dashboard() {
 		}
 	};
 
-	const handleOpenInTimeline = (id: string) => {
+	const handleOpenWorld = async (id: string) => {
 		setWorldId(String(id));
-		navigate("/timeline");
+		const result = await fetchEvents(String(id));
+		if (result.status === "success" && result.data.length === 0) {
+			navigate("/events");
+		} else {
+			navigate("/timeline");
+		}
 	};
 
 	const handleCloseSnackbar = () => {
@@ -197,7 +203,7 @@ function Dashboard() {
 									<WorldCard
 										world={world}
 										isSelected={false}
-										onSelect={handleOpenInTimeline}
+										onSelect={handleOpenWorld}
 										onEdit={handleEdit}
 										onDelete={handleDelete}
 									/>

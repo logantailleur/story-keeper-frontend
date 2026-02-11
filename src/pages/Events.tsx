@@ -5,7 +5,6 @@ import {
 	Box,
 	CircularProgress,
 	Fab,
-	Grid,
 	Snackbar,
 	Typography,
 } from "@mui/material";
@@ -30,7 +29,6 @@ export default function Events() {
 	const [createDialogOpen, setCreateDialogOpen] = useState(false);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [editingEvent, setEditingEvent] = useState<Event | null>(null);
-	const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
 	const loadEvents = async () => {
 		const result = await fetchEvents(worldId);
 		setEventsState(result);
@@ -39,10 +37,6 @@ export default function Events() {
 	useEffect(() => {
 		loadEvents();
 	}, []);
-
-	const handleSelectEvent = (id: string) => {
-		setSelectedEvent(id);
-	};
 
 	const handleCreateSave = async (payload: {
 		title: string;
@@ -182,21 +176,66 @@ export default function Events() {
 							</Typography>
 						</Box>
 					) : (
-						<Grid container spacing={2} sx={{ width: "100%" }}>
-							{eventsState.data.map((event) => (
-								<Grid
-									key={event.id}
-									size={{ xs: 12, sm: 6, md: 4 }}
-								>
-									<EventCard
-										event={event}
-										onSelect={handleSelectEvent}
-										onEdit={handleEdit}
-										onDelete={handleDelete}
-									/>
-								</Grid>
-							))}
-						</Grid>
+						<Box
+							sx={{
+								display: "flex",
+								flexDirection: "column",
+								gap: 3,
+								position: "relative",
+								mt: 2,
+							}}
+						>
+							{/* Timeline line */}
+							<Box
+								sx={{
+									position: "absolute",
+									left: { xs: 16, sm: 24 },
+									top: 0,
+									bottom: 0,
+									width: 3,
+									bgcolor: "divider",
+									borderRadius: 1,
+									zIndex: 0,
+									display: { xs: "none", sm: "block" },
+								}}
+							/>
+							{/* Timeline dots and cards */}
+							{eventsState.data
+								.sort((a, b) => a.year - b.year)
+								.map((event) => (
+									<Box
+										key={event.id}
+										sx={{
+											position: "relative",
+											zIndex: 1,
+											pl: { xs: 0, sm: 6 },
+										}}
+									>
+										{/* Timeline dot */}
+										<Box
+											sx={{
+												position: "absolute",
+												left: { xs: -8, sm: 18 },
+												top: 24,
+												width: 16,
+												height: 16,
+												borderRadius: "50%",
+												bgcolor: "primary.main",
+												border: 3,
+												borderColor: "background.paper",
+												boxShadow: 1,
+												zIndex: 2,
+												display: { xs: "none", sm: "block" },
+											}}
+										/>
+										<EventCard
+											event={event}
+											onEdit={handleEdit}
+											onDelete={handleDelete}
+										/>
+									</Box>
+								))}
+						</Box>
 					)}
 				</>
 			)}

@@ -24,7 +24,7 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-	{ label: "Dashboard", to: "/dashboard", icon: <DashboardRoundedIcon /> },
+	{ label: "My Worlds", to: "/dashboard", icon: <DashboardRoundedIcon /> },
 	{ label: "Timeline", to: "/timeline", icon: <TimelineRoundedIcon /> },
 	{ label: "Events", to: "/events", icon: <EventNoteRoundedIcon /> },
 	{ label: "Figures", to: "/figures", icon: <PeopleAltRoundedIcon /> },

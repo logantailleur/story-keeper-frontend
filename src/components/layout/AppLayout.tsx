@@ -1,14 +1,12 @@
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { Box, Drawer, Fab, Toolbar, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useEffect, useMemo, useState } from "react";
-import { Outlet } from "react-router-dom";
-import type { WorldOption } from "./TopBar";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { WorldProvider } from "../../contexts/WorldContext";
 import { PageContainer } from "./PageContainer";
 import { SidebarNav } from "./SidebarNav";
 import { TopBar } from "./TopBar";
-import { fetchWorlds } from "../../utils/api/worlds";
 
 const DRAWER_WIDTH_EXPANDED = 280;
 const DRAWER_WIDTH_COLLAPSED = 76;
@@ -16,10 +14,12 @@ const WORLD_ID_STORAGE_KEY = "story-keeper-world-id";
 
 export function AppLayout() {
 	const theme = useTheme();
+	const location = useLocation();
 	const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+	const isDashboard = location.pathname === "/dashboard";
+
 	const [mobileOpen, setMobileOpen] = useState(false);
 	const [sidebarExpanded, setSidebarExpanded] = useState(false);
-	const [worlds, setWorlds] = useState<WorldOption[]>([]);
 	const [worldId, setWorldId] = useState<string>(() => {
 		if (typeof window === "undefined") return "";
 		return String(
@@ -27,18 +27,19 @@ export function AppLayout() {
 		);
 	});
 
+	// Clear world selection only when navigating TO dashboard (e.g. from sidebar),
+	// not when selecting a world from dashboard (which sets worldId then navigates away)
+	const prevPathnameRef = useRef(location.pathname);
 	useEffect(() => {
-		fetchWorlds().then((result) => {
-			if (result.status === "success") {
-				setWorlds(
-					result.data.map((w) => ({
-						id: String(w.id),
-						name: w.name,
-					})),
-				);
-			}
-		});
-	}, []);
+		if (
+			location.pathname === "/dashboard" &&
+			prevPathnameRef.current !== "/dashboard"
+		) {
+			setWorldId("");
+			localStorage.removeItem(WORLD_ID_STORAGE_KEY);
+		}
+		prevPathnameRef.current = location.pathname;
+	}, [location.pathname]);
 
 	const handleWorldChange = (id: string) => {
 		const next = String(id);
@@ -46,7 +47,8 @@ export function AppLayout() {
 		localStorage.setItem(WORLD_ID_STORAGE_KEY, next);
 	};
 
-	const reservedDesktopWidth = DRAWER_WIDTH_COLLAPSED;
+	const showSidebar = !isDashboard;
+	const reservedDesktopWidth = showSidebar ? DRAWER_WIDTH_COLLAPSED : 0;
 	const paperWidth = isMobile
 		? DRAWER_WIDTH_EXPANDED
 		: sidebarExpanded
@@ -85,11 +87,9 @@ export function AppLayout() {
 				isMobile={isMobile}
 				onMenuClick={() => setMobileOpen(true)}
 				drawerWidth={reservedDesktopWidth}
-				worlds={worlds}
-				worldId={worldId}
-				onWorldChange={handleWorldChange}
 			/>
 
+			{showSidebar && (
 			<Box
 				component="nav"
 				sx={{
@@ -143,6 +143,7 @@ export function AppLayout() {
 					/>
 				</Drawer>
 			</Box>
+			)}
 
 			<Box
 				component="main"
