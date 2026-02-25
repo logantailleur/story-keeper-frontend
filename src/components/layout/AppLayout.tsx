@@ -153,7 +153,7 @@ export function AppLayout() {
 				}}
 			>
 				<Toolbar />
-				<PageContainer>
+				<PageContainer fullWidth={location.pathname === "/timeline"}>
 					<Outlet />
 				</PageContainer>
 			</Box>

@@ -16,7 +16,10 @@ export interface Event {
 	year: number;
 	description: string;
 	worldId: string;
+	importance?: EventImportance;
 }
+
+export type EventImportance = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
 export enum FigureType {
 	PERSON = "PERSON",
